@@ -1,8 +1,232 @@
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-	<title>test</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <title>Seismic Resistance Assessment Form for Highway Bridges</title>
+  <!-- css -->
+  <link href="assets/css/bootstrap.css" rel="stylesheet">
+  <link href="assets/css/custom.css" rel="stylesheet">
+  <link href="assets/css/jquery-ui.css" rel="stylesheet">
 </head>
 <body>
-	ini body bung
+  <br>
+  <div class="row" style="margin:20px;padding-left:80px;">
+    <div class="col-lg-11">
+      <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title" align="center">Seismic Resistance Assessment Form for Highway Bridges</h3>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-md-4">
+                <div class="input-group">
+                  <span class="input-group-addon">Bridge name</span>
+                  <input type="text" class="form-control">
+                  <span class="input-group-addon">ID</span>
+                </div>
+              </div>  
+               <div class="col-md-4">
+                <div class="input-group">
+                  <span class="input-group-addon">No</span>
+                  <input type="text" class="form-control">
+                  <span class="input-group-addon">Vibration</span>
+                </div>
+              </div>  
+               <div class="col-md-2">
+                <div class="input-group">
+                  <span class="input-group-addon">Unit P</span>
+                  <input type="text" class="form-control">
+                </div>
+              </div>  
+               <div class="col-md-2">
+                <div class="input-group">
+                  <span class="input-group-addon">Unit ~P</span>
+                  <input type="text" class="form-control">
+                </div>
+              </div>  
+            </div>
+            <br>
+            <div class="row">
+              <div class="col-md-2">
+                Design Year
+              </div>
+              <div class="col-md-2">
+                  <input type="radio">&nbsp;
+                  <span class="label label-default">Before 1960</span>
+              </div>
+              <div class="col-md-2">
+                  <input type="radio">&nbsp;
+                  <span class="label label-primary">1960~1987</span>
+              </div>
+              <div class="col-md-2">
+                  <input type="radio">&nbsp;
+                  <span class="label label-success">1987~1995</span>
+              </div>
+              <div class="col-md-2">
+                  <input type="radio">&nbsp;
+                  <span class="label label-info">1995~2000</span>
+              </div>
+              <div class="col-md-2">
+                  <input type="radio">&nbsp;
+                  <span class="label label-danger">*After 2000</span>
+              </div>
+            </div>
+            <br>
+            <div class="row">
+              <div class="col-md-12">
+                <table class="table table-bordered">
+                    <thead>
+                      <tr>
+                        <th style="width:15%">#</th>
+                        <th style="width:10%">Item</th>
+                        <th style="width:10%">Total Grade</th>
+                        <th>Content</th>
+                        <th>Weight</th>
+                        <th style="width:10%">Grade</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <!-- bagian pertama -->
+                      <tr>
+                        <td rowspan="3" style="vertical-align: text-middle;">Site Environment</td>
+                        <td>acceleration coefficient</td>
+                        <td><div align="center" class="t_grade_1">15</div></td>
+                        <td>W=(Z-Zo)/Zo < = 1.0; Z: the horizontal accelaration coefficient of the site in current standard; Zo: the equivalent horizontal acceleration coefficient of the site in actual design</td>
+                        <td><input type="text" maxlength="4" size="8" class="weigth_1"></td>
+                        <td><input type="text" readonly="yes" size="8" class="grade_1" value="0"></td>
+                      </tr>
+                      <tr>
+                        <td>effects of liquefaction</td>
+                        <td><div align="center" class="t_grade_2">8</div></td>
+                        <td>
+                          <input type="radio" class="liquefaction" name="liquefaction" value="1">&nbsp;on liquefiable(1.0);
+                          <input type="radio" class="liquefaction" name="liquefaction" value="0.5">&nbsp;on sand soils(0.5);
+                          <input type="radio" class="liquefaction" name="liquefaction" value="0">&nbsp;none (0);
+                        </td>
+                        <td><input type="text" readonly="yes" maxlength="4" size="8" class="weigth_2"></td>
+                        <td><input type="text" readonly="yes" size="8" class="grade_2" value="0"></td>
+                      </tr>
+                      <tr>
+                        <td>uncovered depth of foundation</td>
+                        <td><div align="center" class="t_grade_3">8</div></td>
+                        <td>foundation uncovered or R > = 2.0. (W= 1.0); 1.0 < = R < 2.0. (W = R-1); R < 1.0(W = 0); W: uncovered depth of foundation (m)/1.2m or R = uncovered depth of foundation (m)/thickness of foundation slab(m); W= 
+                          <input type="text" maxlength="4" size="8" class="r">
+                        </td>
+                        <td><input type="text" readonly="yes" maxlength="4" size="8" class="weigth_3"></td>
+                        <td><input type="text" readonly="yes" size="8" class="grade_3" value="0"></td>
+                      </tr>
+                      <!-- bagian kedua -->
+                      <tr>
+                        <td rowspan="6" style="vertical-align: text-middle;">Structural System</td>
+                        <td>suspended hinge (or joint)</td>
+                        <td><div align="center" class="t_grade_4">5</div></td>
+                        <td>
+                          <input type="radio" class="suspended" name="suspended" value="1">&nbsp;yes(1.0);
+                          <input type="radio" class="suspended" name="suspended" value="0">&nbsp;no(0);
+                        </td>
+                        <td><input type="text" readonly="yes" maxlength="4" size="8" class="weigth_4"></td>
+                        <td><input type="text" readonly="yes" size="8" class="grade_4" value="0"></td>
+                      </tr>
+                      <tr>
+                        <td>height of pier</td>
+                        <td><div align="center" class="t_grade_5">4</div></td>
+                        <td>
+                          H < 15, W = H/15 ; H > = 15, W = 1.0; H : height of pier (m) 
+                        </td>
+                        <td><input type="text" maxlength="4" size="8" class="weigth_5"></td>
+                        <td><input type="text" readonly="yes" size="8" class="grade_5" value="0"></td>
+                      </tr>
+                      <tr>
+                        <td>skewed angle</td>
+                        <td><div align="center" class="t_grade_6">4</div></td>
+                        <td>W = &Oslash;&#9702; / 45 &lt; = 1.0 ; &Oslash;&#9702; : skewed angle</td>
+                        <td><input type="text" maxlength="4" size="8" class="weigth_6"></td>
+                        <td><input type="text" readonly="yes" size="8" class="grade_6" value="0"></td>
+                      </tr>
+                      <tr>
+                        <td>longitudinal gradient</td>
+                        <td><div align="center" class="t_grade_7">4</div></td>
+                        <td>W = longitudinal gradient / 6 < = 1.0</td>
+                        <td><input type="text" maxlength="4" size="8" class="weigth_7"></td>
+                        <td><input type="text" readonly="yes" size="8" class="grade_7" value="0"></td>
+                      </tr>
+                      <tr>
+                        <td>type of foundation</td>
+                        <td><div align="center" class="t_grade_8">4</div></td>
+                        <td>
+                          <input class="foundation" name="foundation" type="radio" value="1">&nbsp;math foundation(1.0);
+                          <input class="foundation" name="foundation" type="radio" value="0.5">&nbsp;pile foundation(0.5);
+                          <input class="foundation" name="foundation" type="radio" value="0">&nbsp;caisson foundation(0);
+                        </td>
+                        <td><input type="text" readonly="yes" maxlength="4" size="8" class="weigth_8"></td>
+                        <td><input type="text" readonly="yes" size="8" class="grade_8" value="0"></td>
+                      </tr>
+                      <tr>
+                        <td>anomalies</td>
+                        <td><div align="center" class="t_grade_9">8</div></td>
+                        <td>anomalies on vertical height of pier, support condition, support seat to concrete slabs, etc. </td>
+                        <td><input type="text" maxlength="4" size="8" class="weigth_9"></td>
+                        <td><input type="text" readonly="yes" size="8" class="grade_9" value="0"></td>
+                      </tr>
+                      <!-- bagian ketiga -->
+                      <tr>
+                        <td rowspan="2" style="vertical-align: text-middle;">Structural Details</td>
+                        <td>restrainer</td>
+                        <td><div align="center" class="t_grade_10">15</div></td>
+                        <td>
+                          <input class="restrainer" name="restrainer" type="radio" value="1">&nbsp;no restrainer on both directions(1.0);
+                          <input class="restrainer" name="restrainer" type="radio" value="0.5">&nbsp; restrainers on direction vertical to driving direction only (0.5);
+                          <input class="restrainer" name="restrainer" type="radio" value="0.3">&nbsp;restrainers on driving direction only (0.3);
+                          <input class="restrainer" name="restrainer" type="radio" value="0">&nbsp;restrainers on both directions(0); 
+                        </td>
+                        <td><input type="text" readonly="yes" maxlength="4" size="8" class="weigth_10"></td>
+                        <td><input type="text" readonly="yes" size="8" class="grade_10" value="0"></td>
+                      </tr>
+                      <tr>
+                        <td>length of bering</td>
+                        <td><div align="center" class="t_grade_11">25</div></td>
+                        <td>
+                          Ne < = N/2 W = 1.0; N/2 < Ne < = N, W = (N-Ne)/(N/2) < = 1.0, Ne > N, W=0; N: the length of bearing seat in standard; Ne : the actual length of bearing seat 
+                        </td>
+                        <td><input type="text" maxlength="4" size="8" class="weigth_11"></td>
+                        <td><input type="text" readonly="yes" size="8" class="grade_11" value="0"></td>
+                      </tr>
+                      <tr>
+                        <td colspan="2" style="vertical-align: text-middle;">Total</td>
+                        <td><div align="center" class="t_grade_12">100</div></td>
+                        <td>
+                        </td>
+                        <td>sum</td>
+                        <td><input type="text" readonly="yes" size="8" class="sum" value="0"></td>
+                      </tr>
+                      <tr>
+                        <td colspan="2" style="vertical-align: text-middle;">Evaluator</td>
+                        <td><input type="text"></td>
+                        <td colspan="3">Evaluation Date
+                          &nbsp;<input style="width:100px;" type="text" class="datepicker">
+                        </td>
+                      </tr>
+                    </tbody>
+                </table>
+                <div align="center">
+                    <button type="button" class="btn btn-primary">Submit</button>
+                    <button type="button" class="btn btn-default">Reset</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+  </div>
+
+  <!--javascript-->
+  <script type="text/javascript" src="assets/js/jquery.min.js"></script>
+  <script type="text/javascript" src="assets/js/custom.js"></script>
+  <script type="text/javascript" src="assets/js/jquery-ui.js"></script>
+  <script type="text/javascript">
+    $(function() {
+      $( ".datepicker" ).datepicker();
+    });
+  </script>
 </body>
 </html>
