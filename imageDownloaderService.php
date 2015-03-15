@@ -11,7 +11,9 @@
 	
 	require_once 'imageResizer.php';
 
-	$url = "http://cdn3.123picbox.com/";
+	// $url = "http://cdn3.123picbox.com/";
+	$url = "http://badrullami.github.io/";  
+	
 	$query = mysql_query("select * from images where is_downloaded=0 limit 1");
 	
 	while($row = mysql_fetch_array($query)){
