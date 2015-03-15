@@ -1,2 +1,2 @@
 #!/bin/bash
-git push origin master >> /home/ubuntu/githubPush.log
+git push https://123picbox:123p1cb0x@github.com/badrullami/badrullami.github.io.git master
