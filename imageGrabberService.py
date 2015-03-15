@@ -18,7 +18,7 @@ def getsize(uri):
     file.close()
     return size
 
-cnx = mysql.connector.connect(user='root', password='1234', database='123picbox_backgrounds')
+cnx = mysql.connector.connect(user='root', password='123p1cb0x', database='123picbox')
 
 keysearcRecords = cnx.cursor(buffered=True)
 keysearcRecords.execute("SELECT * FROM keysearch where is_grabbed=0 limit 2")
