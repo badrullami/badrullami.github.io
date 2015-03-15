@@ -10,7 +10,7 @@
 	mysql_select_db($dbse, $db_conn);
 	
 	require_once 'image_resizer.php';
-	
+
 	$url = "http://cdn3.123picbox.com/";
 	$query = mysql_query("select * from images where is_downloaded=0 limit 1");
 	
@@ -110,7 +110,6 @@
 					Large_2048 ='".$url.$path_large2048."', 
 					Large_2048_Width =".$width_large2048.", 
 					Large_2048_Height =".$height_large2048.",
-					Original ='".$url.$path_original."',
 					web_thumbnail ='".$url.$path_small."',
 					web_single ='".$url.$path_medium800."',
 					is_downloaded =1     
@@ -175,7 +174,6 @@
 					Large_2048 ='".$url.$path_large2048."', 
 					Large_2048_Width =".$width_large2048.", 
 					Large_2048_Height =".$height_large2048.",
-					Original ='".$url.$path_original."',
 					web_thumbnail ='".$url.$path_small."',
 					web_single ='".$url.$path_medium800."',
 					is_downloaded =1     
