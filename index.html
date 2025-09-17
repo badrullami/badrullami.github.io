@@ -1,42 +1,479 @@
-<html>
-  <head>
-    <title>Instascan &ndash; Demo</title>
-    <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="stylesheet" href="style.css">
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/webrtc-adapter/3.3.3/adapter.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.1.10/vue.min.js"></script>
-    <script type="text/javascript" src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
-  </head>
-  <body>
-    <a href="https://github.com/schmich/instascan"><img style="position: absolute; top: 0; right: 0; border: 0; z-index: 1" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
-    <div id="app">
-      <div class="sidebar">
-        <section class="cameras">
-          <h2>Cameras</h2>
-          <ul>
-            <li v-if="cameras.length === 0" class="empty">No cameras found</li>
-            <li v-for="camera in cameras">
-              <span v-if="camera.id == activeCameraId" :title="formatName(camera.name)" class="active">{{ formatName(camera.name) }}</span>
-              <span v-if="camera.id != activeCameraId" :title="formatName(camera.name)">
-                <a @click.stop="selectCamera(camera)">{{ formatName(camera.name) }}</a>
-              </span>
-            </li>
-          </ul>
-        </section>
-        <section class="scans">
-          <h2>Scans</h2>
-          <ul v-if="scans.length === 0">
-            <li class="empty">No scans yet</li>
-          </ul>
-          <transition-group name="scans" tag="ul">
-            <li v-for="scan in scans" :key="scan.date" :title="scan.content">{{ scan.content }}</li>
-          </transition-group>
-        </section>
-      </div>
-      <div class="preview-container">
-        <video id="preview"></video>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asset Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 font-sans text-gray-800">
+
+  <div class="max-w-7xl mx-auto p-4">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-4">
+      <h1 class="text-2xl font-bold">Asset Dashboard</h1>
+      <div class="relative w-64">
+        <input id="assetSearch" type="text" placeholder="Search..." aria-label="Search assets"
+               class="w-full pl-10 pr-4 py-2 rounded-lg border focus:ring focus:ring-blue-300 focus:outline-none">
+        <i id="btnAssetSearch" class="fa fa-search absolute left-3 top-3 text-gray-400 cursor-pointer"></i>
       </div>
     </div>
-    <script type="text/javascript" src="app.js"></script>
-  </body>
+
+    <!-- Grid Content -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+      <!-- Left Section (stretchable) -->
+      <div class="lg:col-span-2 space-y-6 h-full">
+        <!-- Real-Time Asset Location (take full height of row) -->
+        <div class="bg-white rounded-2xl shadow-lg p-5 h-full flex flex-col border border-gray-100">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <h2 class="text-xl font-semibold">Real-Time Asset Location</h2>
+              <p class="text-sm text-gray-500 mt-1">Live positions for tracked assets (demo mode)</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button class="text-gray-400 hover:text-gray-700 px-3 py-2 rounded-md bg-gray-50 border border-gray-100" title="Refresh"><i class="fa-solid fa-arrows-rotate"></i></button>
+              <button id="btnToggleControlsHeader" class="text-gray-400 hover:text-gray-700 px-3 py-2 rounded-md bg-gray-50 border border-gray-100" title="Show/Hide controls"><i class="fa-solid fa-eye-slash"></i></button>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg flex-1 flex items-center justify-center relative overflow-hidden mt-4" style="box-shadow: inset 0 -6px 20px rgba(0,0,0,0.03);">
+            <img src="blog-image-indoor-mapping-engine.svg" class="absolute inset-0 w-full h-full object-contain object-center opacity-85" alt="Indoor map">
+            <!-- example markers -->
+            <div class="absolute top-12 left-16 text-red-500 text-2xl drop-shadow"><i class="fa-solid fa-circle"></i></div>
+            <div class="absolute top-24 left-40 text-green-500 text-2xl drop-shadow"><i class="fa-solid fa-circle"></i></div>
+            <div class="absolute bottom-20 left-28 text-blue-500 text-2xl drop-shadow"><i class="fa-solid fa-circle"></i></div>
+            <div class="absolute bottom-10 right-20 text-red-500 text-2xl drop-shadow"><i class="fa-solid fa-circle"></i></div>
+          </div>
+
+          <div class="mt-4 flex items-center justify-between text-sm text-gray-500">
+            <div>Last update: <span id="lastUpdate" class="text-gray-700">just now</span></div>
+            <div class="flex items-center gap-3">
+              <span class="flex items-center gap-2"><i class="fa fa-circle text-green-500"></i><small>Active</small></span>
+              <span class="flex items-center gap-2"><i class="fa fa-circle text-blue-500"></i><small>Idle</small></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Section -->
+      <div class="space-y-6">
+        <!-- Asset Inventory & Status -->
+        <div class="bg-white rounded-xl shadow p-4">
+          <h2 class="text-lg font-semibold mb-3">Asset Inventory & Status</h2>
+          <div class="grid grid-cols-2 gap-4 text-center">
+            <div><span class="text-xl font-bold">25</span><p>Ventilator</p></div>
+            <div><span class="text-xl font-bold">40</span><p>Wheelchair</p></div>
+            <div><span class="text-xl font-bold">120</span><p>Infusion Pump</p></div>
+            <div><span class="text-xl font-bold">15</span><p>Operating Table</p></div>
+          </div>
+          <div class="flex justify-center gap-4 mt-3 text-sm">
+            <span class="flex items-center gap-1 text-green-500"><i class="fa fa-circle"></i> In Use</span>
+            <span class="flex items-center gap-1 text-blue-500"><i class="fa fa-circle"></i> Available</span>
+            <span class="flex items-center gap-1 text-yellow-500"><i class="fa fa-circle"></i> Under Maintenance</span>
+          </div>
+        </div>
+
+        <!-- Alerts & Notifications -->
+        <div class="bg-white rounded-xl shadow p-4">
+          <div class="flex justify-between items-center mb-3">
+            <h2 class="text-lg font-semibold">Alerts & Notifications</h2>
+            <span class="text-sm text-gray-500">65% Used</span>
+          </div>
+          <div class="space-y-3" id="alertsList">
+            <div id="noAlerts" class="text-center text-gray-400 py-6">No data available</div>
+          </div>
+        </div>
+
+        <!-- Zone-Based Asset Availability -->
+        <div class="bg-white rounded-xl shadow p-4">
+          <h2 class="text-lg font-semibold mb-3">Zone-Based Asset Availability</h2>
+          <table class="w-full text-sm text-center border-collapse">
+            <thead>
+              <tr class="bg-gray-100">
+                <th class="p-2">ICU</th>
+                <th class="p-2">ER</th>
+                <th class="p-2">Ward</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="p-2">Ventilators</td>
+                <td class="p-2">5</td>
+                <td class="p-2">10</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    /* marker styles */
+    .asset-marker { cursor: grab; }
+    .asset-dot { stroke: #fff; stroke-width: 1.5px; }
+    .blink-red { animation: blink-red 1s infinite; }
+    @keyframes blink-red { 0% { opacity: 1 } 50% { opacity: 0.2 } 100% { opacity: 1 } }
+    /* allow clicks on icons inside foreignObject to bubble up to the parent group */
+    .asset-marker foreignObject, .asset-marker foreignObject * { pointer-events: none; }
+    /* search highlight: blue ring and subtle pulse/blink */
+    .search-ring { stroke: #3b82f6 !important; stroke-width: 3px !important; filter: drop-shadow(0 0 6px rgba(59,130,246,0.45)); }
+    .search-blink { animation: blue-blink 1s infinite; }
+    @keyframes blue-blink { 0% { opacity: 1 } 50% { opacity: 0.3 } 100% { opacity: 1 } }
+  </style>
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+  (function(){
+    const container = d3.select('.bg-white.rounded-lg.flex-1'); // map area
+    if(!container.empty()){
+      const w = container.node().clientWidth;
+      const h = container.node().clientHeight;
+      const svg = container.append('svg').attr('width','100%').attr('height','100%').attr('viewBox',`0 0 ${w} ${h}`).style('position','absolute').style('left',0).style('top',0).style('z-index',10);
+
+      // background image (use existing img src)
+      const img = container.select('img');
+      const imgUrl = img.attr('src');
+      // put image into svg for coordinate consistency
+      svg.append('image').attr('href', imgUrl).attr('x',0).attr('y',0).attr('width',w).attr('height',h).attr('preserveAspectRatio','xMidYMid meet').style('opacity',0.9);
+      img.style('display','none');
+
+      // legend positions in normalized coords
+      const assets = [];
+      // 2 wheelchairs
+      assets.push({ id:'WC1', type:'wheelchair', x:0.18, y:0.22 });
+      assets.push({ id:'WC2', type:'wheelchair', x:0.22, y:0.28 });
+      // 3 ventilators
+      assets.push({ id:'V1', type:'ventilator', x:0.6, y:0.2 });
+      assets.push({ id:'V2', type:'ventilator', x:0.62, y:0.26 });
+      assets.push({ id:'V3', type:'ventilator', x:0.64, y:0.32 });
+      // 1 infusion pump
+      assets.push({ id:'IP1', type:'infusion', x:0.4, y:0.6 });
+
+      function normToXY(p){ return [p.x * w, p.y * h]; }
+
+      const g = svg.append('g').attr('class','markers');
+
+      function colorByType(t){
+        if(t==='wheelchair') return '#0ea5a4';
+        if(t==='ventilator') return '#ef4444';
+        if(t==='infusion') return '#f97316';
+        return '#6b7280';
+      }
+
+      // visual defaults for asset badges
+      const defaultAssetColor = '#10b981'; // green-500
+      const alertColor = '#ef4444'; // red-500
+
+      function iconClassByType(t){
+        if(t==='wheelchair') return 'fa-wheelchair';
+        // use an electronic/medical device icon for ventilator
+        if(t==='ventilator') return 'fa-tv';
+        if(t==='infusion') return 'fa-syringe';
+        return 'fa-circle';
+      }
+
+      function draw(){
+        const sel = g.selectAll('.asset-marker').data(assets, d=>d.id);
+        const enter = sel.enter().append('g').attr('class','asset-marker').attr('data-id',d=>d.id).style('cursor','grab');
+  // add a colored circle background for elegance (default green)
+  enter.append('circle').attr('class','asset-bg').attr('r',14).attr('cx',0).attr('cy',0).attr('fill',defaultAssetColor).attr('stroke','#fff').attr('stroke-width',1.5);
+        // use foreignObject to render FontAwesome icons inside SVG (works in modern browsers)
+        enter.append('foreignObject').attr('width',28).attr('height',28).attr('x',-14).attr('y',-14).append('xhtml:div')
+          .style('width','28px').style('height','28px').style('display','flex').style('align-items','center').style('justify-content','center')
+          .html(d=>`<i class="fa-solid ${iconClassByType(d.type)}" style="color:#fff;font-size:14px;filter:drop-shadow(0 1px 0 rgba(0,0,0,0.12));"></i>`);
+        // add a small label to the right
+        enter.append('text').text(d=>d.id).attr('x',18).attr('y',6).style('font-size','12px').style('fill','#111827');
+        sel.merge(enter).attr('transform', d=>{ const [x,y]=normToXY(d); return `translate(${x},${y})`; });
+
+        // drag
+        const drag = d3.drag().on('start', function(event,d){ d3.select(this).raise(); }).on('drag', function(event,d){
+          const nx = Math.max(0, Math.min(1, event.x / w));
+          const ny = Math.max(0, Math.min(1, event.y / h));
+          d.x = nx; d.y = ny;
+          d3.select(this).attr('transform', `translate(${event.x},${event.y})`);
+        });
+        g.selectAll('.asset-marker').call(drag);
+      }
+
+      draw();
+
+      // attach click handlers to markers to show info modal
+      function setupMarkerClicks(){
+        // unbind previous handlers to avoid duplicates
+        g.selectAll('.asset-marker').on('click', null);
+        g.selectAll('.asset-marker').on('click', function(event, d){
+          // stop drag from interfering
+          event.stopPropagation();
+          const id = d.id;
+          const type = d.type;
+          // dummy data mapping
+          const mapping = {
+            'WC1': { name:'Wheelchair A', origin:'Ruang ICU', photo:'wheelchair.jpg' },
+            'WC2': { name:'Wheelchair B', origin:'Ruang Ward', photo:'wheelchair.jpg' },
+            'V1': { name:'Ventilator X', origin:'Ruang ICU', photo:'ventilator.jpg' },
+            'V2': { name:'Ventilator Y', origin:'Ruang ER', photo:'ventilator.jpg' },
+            'V3': { name:'Ventilator Z', origin:'Ruang Ward', photo:'ventilator.jpg' },
+            'IP1': { name:'Infusion Pump 1', origin:'Ruang ICU', photo:'Infus-pump.webp' }
+          };
+          const info = mapping[id] || { name: type, origin:'Unknown', photo:'https://via.placeholder.com/320x240?text=Asset' };
+          d3.select('#assetPhoto').attr('src', info.photo);
+          d3.select('#assetIdVal').text(id);
+          d3.select('#assetNameVal').text(info.name);
+          d3.select('#assetOriginVal').text(info.origin);
+          d3.select('#assetStatusVal').text('Active');
+          d3.select('#assetInfoModal').classed('hidden', false).style('display','flex');
+
+          // ensure close handlers are bound (idempotent)
+          const closeBtn = d3.select('#assetCloseBtn');
+          closeBtn.on('click.modal', ()=>{ d3.select('#assetInfoModal').classed('hidden', true).style('display','none'); });
+          const modal = d3.select('#assetInfoModal');
+          modal.on('click.modal', function(event){ if(event.currentTarget === this) modal.classed('hidden', true).style('display','none'); });
+        });
+      }
+      setupMarkerClicks();
+
+      // add a small legend overlay in the map container
+      const legend = container.append('div').attr('class','absolute left-4 bottom-4 bg-white/90 p-2 rounded-lg shadow flex gap-3 items-center text-sm').style('z-index',20);
+      const items = [ {type:'wheelchair',label:'Wheelchair'}, {type:'ventilator',label:'Ventilator'}, {type:'infusion',label:'Infusion Pump'} ];
+      items.forEach(it => {
+        const item = legend.append('div').attr('class','flex items-center gap-2');
+        // legend shows the active color (green) by default
+        item.append('div').html(`<i class="fa-solid ${iconClassByType(it.type)}" style="color:${defaultAssetColor};font-size:16px"></i>`);
+        item.append('div').text(it.label).style('color','#111827');
+      });
+
+      // animate V1 moving along a corridor path to a target room
+      function animateVentilator(){
+        const path = [ {x:0.6,y:0.2}, {x:0.58,y:0.35}, {x:0.5,y:0.45}, {x:0.35,y:0.5} ]; // normalized path
+        const v = assets.find(a=>a.id==='V1');
+        if(!v) return;
+        const marker = g.selectAll('.asset-marker').filter(d=>d.id==='V1');
+
+        // We'll schedule the alert to appear after the total travel time.
+        // Compute approximate total duration: (path.length * 1200) + (path.length * 300) small delays
+        const perLeg = 1200;
+        const interDelay = 300;
+        const totalLegs = path.length;
+        const totalDurationMs = (perLeg + interDelay) * totalLegs;
+
+        // Start blinking 2 seconds before the alert is shown.
+        const blinkLeadMs = 2000;
+        const blinkStartAt = Math.max(0, totalDurationMs - blinkLeadMs);
+
+        // Ensure marker does NOT have blink initially
+        marker.select('circle').classed('blink-red', false);
+
+        // schedule blink start - apply to background circle (.asset-bg)
+        setTimeout(()=>{
+          marker.select('.asset-bg').classed('blink-red', true);
+        }, blinkStartAt);
+
+        // After movement completes we DO NOT remove the blink class (keep blinking)
+        let i = 0;
+        function step(){
+          if(i>=path.length){
+            // movement done
+            // push alert at end time (use same Date for timestamp) and mark asset as alerted
+            pushAlert('Ventilator V1 moved out of ICU', new Date(), 'V1');
+            return;
+          }
+          const target = path[i];
+          // animate position
+          const [tx,ty] = [target.x*w, target.y*h];
+          marker.transition().duration(perLeg).ease(d3.easeCubic).attrTween('transform', function(){
+            const current = this.getAttribute('transform');
+            const mat = current.match(/translate\(([^,]+),([^\)]+)\)/);
+            const cx = mat ? parseFloat(mat[1]) : 0;
+            const cy = mat ? parseFloat(mat[2]) : 0;
+            const ix = d3.interpolateNumber(cx, tx);
+            const iy = d3.interpolateNumber(cy, ty);
+            return function(t){ return `translate(${ix(t)},${iy(t)})`; };
+          }).on('end', ()=>{ v.x = target.x; v.y = target.y; i++; setTimeout(step, interDelay); });
+        }
+        step();
+      }
+
+      function pushAlert(message, date, assetId){
+        const alerts = d3.selectAll('.bg-white.rounded-xl.shadow.p-4').filter(function(){ return d3.select(this).select('h2').text().includes('Alerts'); });
+        if(alerts.empty()) return;
+        const container = alerts.select('.space-y-3');
+        // remove placeholder if present
+        const placeholder = container.select('#noAlerts');
+        if(!placeholder.empty()) placeholder.remove();
+        const now = date || new Date();
+        const formatted = now.toLocaleString();
+        const node = container.insert('div',':first-child').attr('class','flex items-center gap-3 bg-red-50 p-2 rounded-lg');
+        node.append('i').attr('class','fa fa-triangle-exclamation text-red-500 text-xl');
+        const info = node.append('div');
+        info.append('p').attr('class','font-medium').text(message);
+        info.append('span').attr('class','text-xs text-gray-500').text(formatted);
+
+        // if an assetId is provided, mark that asset's badge as alert color and ensure blink
+        if(assetId){
+          const marker = g.selectAll('.asset-marker').filter(d=>d.id===assetId);
+          if(!marker.empty()){
+            marker.select('.asset-bg').attr('fill', alertColor).classed('blink-red', true);
+          }
+          // if the ventilator (V1) alerted, schedule WC1 to move after 5 seconds
+        //   if(assetId === 'V1'){
+        //     setTimeout(()=>{ animateWC1(); }, 5000);
+        //   }
+        }
+      }
+
+      // animate WC1: move +150px right, then +100px down (pixel-based), then trigger alert for WC1
+      function animateWC1(){
+        const asset = assets.find(a=>a.id==='WC1');
+        if(!asset) return;
+        const marker = g.selectAll('.asset-marker').filter(d=>d.id==='WC1');
+        if(marker.empty()) return;
+
+        // get current transform position
+        const current = marker.attr('transform');
+        const mat = current ? current.match(/translate\(([^,]+),([^\)]+)\)/) : null;
+        const cx = mat ? parseFloat(mat[1]) : 0;
+        const cy = mat ? parseFloat(mat[2]) : 0;
+
+        const step1x = cx + 150; // move right 150px
+        const step1y = cy;
+        const step2x = step1x;
+        const step2y = step1y + 100; // then down 100px
+
+        // animate first leg
+        marker.transition().duration(800).ease(d3.easeCubic).attrTween('transform', function(){
+          const ix = d3.interpolateNumber(cx, step1x);
+          const iy = d3.interpolateNumber(cy, step1y);
+          return function(t){ return `translate(${ix(t)},${iy(t)})`; };
+        }).on('end', ()=>{
+          // animate second leg
+          marker.transition().duration(800).ease(d3.easeCubic).attrTween('transform', function(){
+            const cur = marker.attr('transform');
+            const m = cur.match(/translate\(([^,]+),([^\)]+)\)/);
+            const sx = m ? parseFloat(m[1]) : step1x;
+            const sy = m ? parseFloat(m[2]) : step1y;
+            const ix2 = d3.interpolateNumber(sx, step2x);
+            const iy2 = d3.interpolateNumber(sy, step2y);
+            return function(t){ return `translate(${ix2(t)},${iy2(t)})`; };
+          }).on('end', ()=>{
+            // update normalized coords for asset
+            asset.x = Math.max(0, Math.min(1, step2x / w));
+            asset.y = Math.max(0, Math.min(1, step2y / h));
+            // trigger alert for WC1
+            pushAlert('Wheelchair WC1 moved out of Storage', new Date(), 'WC1');
+          });
+        });
+      }
+
+      // start demo after short delay
+      setTimeout(()=>{ animateVentilator(); }, 1200);
+
+      // update last-update timestamp every 5 seconds
+      const lastUpdateEl = d3.select('#lastUpdate');
+      function refreshLastUpdate(){
+        const now = new Date();
+        lastUpdateEl.text(now.toLocaleString());
+      }
+      // initial update
+      refreshLastUpdate();
+      // interval every 5 seconds
+      setInterval(refreshLastUpdate, 5000);
+
+      // expose API to adjust positions programmatically
+      window.assetBoard = { assets, redraw: draw };
+
+      // --- Search & zoom functionality ---
+      // mapping of id -> info (also used by modal)
+      const assetInfo = {};
+      assets.forEach(a => { assetInfo[a.id] = { id:a.id, type:a.type, name: a.id }; });
+
+      let currentSearchId = null;
+      const originalViewBox = svg.attr('viewBox');
+
+      function clearSearchHighlight(){
+        if(currentSearchId){
+          const prev = g.selectAll('.asset-marker').filter(d=>d.id===currentSearchId);
+          prev.select('.asset-bg').classed('search-ring', false).classed('search-blink', false);
+          currentSearchId = null;
+          // restore viewBox
+          svg.transition().duration(400).attr('viewBox', originalViewBox);
+        }
+      }
+
+      function zoomToAsset(assetId){
+        const asset = assets.find(a=>a.id === assetId);
+        if(!asset) return false;
+        const [x,y] = normToXY(asset);
+        // compute a viewBox that centers on the asset and zooms in
+        const vbW = Math.max(200, Math.min(w, 400));
+        const vbH = Math.max(150, Math.min(h, 300));
+        const vbX = Math.max(0, Math.min(w - vbW, x - vbW/2));
+        const vbY = Math.max(0, Math.min(h - vbH, y - vbH/2));
+        svg.transition().duration(700).attr('viewBox', `${vbX} ${vbY} ${vbW} ${vbH}`);
+        // apply search highlight (blue ring + blink)
+        clearSearchHighlight();
+        const marker = g.selectAll('.asset-marker').filter(d=>d.id===assetId);
+        marker.select('.asset-bg').classed('search-ring', true).classed('search-blink', true);
+        currentSearchId = assetId;
+        // remove highlight after 5s automatically
+        setTimeout(()=>{ if(currentSearchId===assetId){ clearSearchHighlight(); } }, 5000);
+        return true;
+      }
+
+      // add pulse highlight style
+      const pulseStyle = document.createElement('style');
+      pulseStyle.innerHTML = `.pulse-highlight{box-shadow:0 0 0 4px rgba(99,102,241,0.15); animation: pulse 1.2s ease-out;} @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}`;
+      document.head.appendChild(pulseStyle);
+
+      function performSearch(q){
+        if(!q || !q.trim()) return;
+        const term = q.trim().toLowerCase();
+        // search by id or simple name
+        let found = assets.find(a => a.id.toLowerCase() === term || (a.id + ' ' + a.type).toLowerCase() === term || a.type.toLowerCase() === term || a.id.toLowerCase().includes(term));
+        if(!found){
+          Swal.fire({ icon:'warning', title:'Data tidak ditemukan', text:`Asset "${q}" tidak ditemukan` });
+          return;
+        }
+        zoomToAsset(found.id);
+      }
+
+      // wire input Enter and search icon
+      const searchInput = document.getElementById('assetSearch');
+      searchInput.addEventListener('keydown', function(e){
+        if(e.key === 'Enter') performSearch(this.value);
+        if(e.key === 'Escape'){ this.value=''; clearSearchHighlight(); }
+      });
+      // clear highlight when input is emptied
+      searchInput.addEventListener('input', function(){ if(!this.value) clearSearchHighlight(); });
+      document.getElementById('btnAssetSearch').addEventListener('click', function(){ performSearch(searchInput.value); });
+    }
+  })();
+  </script>
+
+  <!-- Asset Info Modal -->
+  <div id="assetInfoModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-2xl overflow-hidden">
+      <div class="flex">
+        <div class="w-1/2 p-4 border-r">
+          <img id="assetPhoto" src="https://via.placeholder.com/320x240?text=Asset+Photo" alt="photo" class="w-full h-48 object-cover rounded" />
+        </div>
+        <div class="w-1/2 p-4">
+          <h3 id="assetTitle" class="text-lg font-semibold mb-2">Asset Info</h3>
+          <div class="space-y-2 text-sm">
+            <div><strong>No id asset:</strong> <span id="assetIdVal">WC1</span></div>
+            <div><strong>Nama asset:</strong> <span id="assetNameVal">Wheelchair</span></div>
+            <div><strong>Origin place:</strong> <span id="assetOriginVal">Ruang ICU</span></div>
+            <div><strong>Status:</strong> <span id="assetStatusVal">Active</span></div>
+          </div>
+          <div class="mt-4 flex justify-end">
+            <button id="assetCloseBtn" class="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
 </html>
